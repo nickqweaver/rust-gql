@@ -8,6 +8,12 @@
     pub is_cool: bool
   }
 
+#[derive(GraphQLObject)]
+pub struct Response {
+  pub success: bool,
+  pub message: String,
+}
+
 // The user isn't actually more complex but when you have fields
 // that don't map 1 to 1 to a graphql object you can create a 
 // graphql object! and resolve the fields with any additional business logic

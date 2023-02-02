@@ -1,19 +1,19 @@
-async fn graphql(
-  schema: Arc<Schema>,
-  ctx: Arc<Context>,
-  req: GraphQLRequest,
-) -> Result<impl warp::Reply, Infallible> {
-  let res = req.execute(&schema, &ctx);
-  let json = serde_json::to_string(&res).expect("Invalid JSON response");
-  Ok(json)
-}
 
-async fn start() {
-  let schema = Arc::new(Schema::new(Query, Mutation));
+use warp::Filter;
+use std::sync::Arc;
+use juniper::{http::graphiql::graphiql_source};
+use super::schema::{graphql, build_schema};
+
+pub struct Context;
+impl juniper::Context for Context {}
+
+
+pub async fn start() {
+  let schema = build_schema();
   // Create a warp filter for the schema
   let schema = warp::any().map(move || Arc::clone(&schema));
 
-  let ctx = Arc::new(Context { data: String::from("Here's your test data") });
+  let ctx = Arc::new(Context);
   // Create a warp filter for the context
   let ctx = warp::any().map(move || Arc::clone(&ctx));
 
