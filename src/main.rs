@@ -7,7 +7,7 @@ use juniper::{http::GraphQLRequest, http::graphiql::graphiql_source, RootNode};
 // Module Tree
 mod user;
 
-use user::graphql::{query::UserQuery, types::{User}};
+use user::graphql::{query::UserQuery, mutation::UserMutation};
 
 #[macro_use] extern crate juniper;
 
@@ -15,19 +15,7 @@ use user::graphql::{query::UserQuery, types::{User}};
 pub struct Context;
 impl juniper::Context for Context {}
 
-struct Mutation;
-
-graphql_object!(Mutation: Context |&self| {
-    field createHuman(&executor) -> User {
-        User {
-            name: String::from("Nick Weaver"),
-            age: 30,
-            is_cool: false
-        }
-    }
-});
-
-type Schema = RootNode<'static, UserQuery, Mutation>;
+type Schema = RootNode<'static, UserQuery, UserMutation>;
 
 async fn graphql(
     schema: Arc<Schema>,
@@ -41,7 +29,7 @@ async fn graphql(
 
 #[tokio::main]
 async fn main() {
-    let schema = Arc::new(Schema::new(UserQuery, Mutation));
+    let schema = Arc::new(Schema::new(UserQuery, UserMutation));
     // Create a warp filter for the schema
     let schema = warp::any().map(move || Arc::clone(&schema));
 
