@@ -1,34 +1,44 @@
+use std::convert::Infallible;
 
-use warp::Filter;
-use std::sync::Arc;
-use juniper::{http::graphiql::graphiql_source};
-use super::schema::{graphql, build_schema};
-
-pub struct Context;
-impl juniper::Context for Context {}
-
+use async_graphql::{http::GraphiQLSource, EmptySubscription, EmptyMutation, Schema};
+use async_graphql_warp::{GraphQLBadRequest, GraphQLResponse};
+use warp::{http::Response as HttpResponse, Filter, Rejection};
+use http::StatusCode;
+use crate::schema::{build_schema, RootQuery};
 
 pub async fn start() {
   let schema = build_schema();
-  // Create a warp filter for the schema
-  let schema = warp::any().map(move || Arc::clone(&schema));
 
-  let ctx = Arc::new(Context);
-  // Create a warp filter for the context
-  let ctx = warp::any().map(move || Arc::clone(&ctx));
+  println!("GraphiQL IDE: http://localhost:8000");
 
-  let graphql_route = warp::post()
-      .and(warp::path!("graphql"))
-      .and(schema.clone())
-      .and(ctx.clone())
-      .and(warp::body::json())
-      .and_then(graphql);
+  let graphql_post = async_graphql_warp::graphql(schema).and_then(
+    |(schema, request): (
+        Schema<RootQuery, EmptyMutation, EmptySubscription>,
+        async_graphql::Request,
+    )| async move {
+        Ok::<_, Infallible>(GraphQLResponse::from(schema.execute(request).await))
+    },
+  );
 
-  let graphiql_route = warp::get()
-      .and(warp::path!("graphiql"))
-      .map(|| warp::reply::html(graphiql_source("graphql")));
+  let graphiql = warp::path::end().and(warp::get()).map(|| {
+    HttpResponse::builder()
+        .header("content-type", "text/html")
+        .body(GraphiQLSource::build().endpoint("/").finish())
+  });
 
-  let routes = graphql_route.or(graphiql_route);
+  let routes = graphiql
+    .or(graphql_post)
+    .recover(|err: Rejection| async move {
+        if let Some(GraphQLBadRequest(err)) = err.find() {
+            return Ok::<_, Infallible>(warp::reply::with_status(
+                err.to_string(),
+                StatusCode::BAD_REQUEST,
+            ));
+        }
 
-  warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
+        Ok(warp::reply::with_status(
+            "INTERNAL_SERVER_ERROR".to_string(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ))
+    });
 }

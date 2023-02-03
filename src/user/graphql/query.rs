@@ -1,24 +1,24 @@
-use super::{User, MoreComplexUser};
-use crate::server::Context;
+use async_graphql::*;
 
+use super::{User, MoreComplexUser};
 pub struct UserQuery;
 
-// This would be consider our "Root" Query for the User App
-graphql_object! (UserQuery: Context |&self| {
-  field get() -> User {
-      User {
-          name: String::from("Nick Weaver"),
-          age: 30,
-          is_cool: false
-      }
+#[Object]
+impl UserQuery {
+  async fn get(&self) -> User {
+    User {
+      name: String::from("Nick Weaver"),
+      age: 30,
+      is_cool: false
+    }
   }
-  field get_complex() -> MoreComplexUser {
-    return MoreComplexUser {
+  async fn get_complex(&self) -> MoreComplexUser {
+    MoreComplexUser {
       name: String::from("Hello"),
       age: 20 // Should add 10
     }
   }
-  field find_by_id(id: i32) -> User {
+  async fn find_by_id(&self, id: i32) -> User {
     if id > 10 {
       User {
         name: String::from("Gary"),
@@ -33,12 +33,11 @@ graphql_object! (UserQuery: Context |&self| {
       }
     }
   }
-  field auth() -> User {
+  async fn auth(&self) -> User {
     User {
       name: String::from("I am the AuthUser!"),
       age: 20,
       is_cool: true
     }
   }
-});
-
+} 

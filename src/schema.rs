@@ -1,34 +1,20 @@
-use std::sync::Arc;
-use std::convert::Infallible;
-use juniper::{http::GraphQLRequest, RootNode};
-use super::user::graphql::{UserQuery, UserMutation};
-use crate::server::Context;
-
+use async_graphql::*;
+use super::user::graphql::{UserQuery};
 
 pub struct RootQuery;
-pub struct RootMutation;
+// pub struct RootMutation;
 
-graphql_object!(RootQuery: Context |&self| {
-  field user() -> UserQuery { UserQuery }
-});
-
-graphql_object!(RootMutation: Context |&self| {
-  field user() -> UserMutation { UserMutation }
-});
-
-pub type Schema = RootNode<'static, RootQuery, RootMutation>;
-
-pub fn build_schema() -> Arc<Schema> {
-  let schema = Arc::new(Schema::new(RootQuery, RootMutation));
-  schema
+#[Object]
+impl RootQuery {
+  async fn user(&self) -> UserQuery {UserQuery}
 }
 
-pub async fn graphql(
-  schema: Arc<Schema>,
-  ctx: Arc<Context>,
-  req: GraphQLRequest,
-) -> Result<impl warp::Reply, Infallible> {
-  let res = req.execute(&schema, &ctx);
-  let json = serde_json::to_string(&res).expect("Invalid JSON response");
-  Ok(json)
+// #[Object]
+// impl RootMutation {
+//   async fn user(&self) -> UserMutation {UserMutation}
+// }
+
+pub fn build_schema() -> Schema<RootQuery, EmptyMutation, EmptySubscription> {
+  let schema = Schema::new(RootQuery, EmptyMutation, EmptySubscription);
+  schema
 }

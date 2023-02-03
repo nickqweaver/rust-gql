@@ -1,4 +1,6 @@
-#[derive(GraphQLObject)]
+use async_graphql::*;
+
+#[derive(SimpleObject)]
   pub struct User {
     // The users first name
     pub name: String,
@@ -8,7 +10,7 @@
     pub is_cool: bool
   }
 
-#[derive(GraphQLObject)]
+#[derive(SimpleObject)]
 pub struct Response {
   pub success: bool,
   pub message: String,
@@ -23,13 +25,14 @@ pub struct MoreComplexUser {
 }
 
 // This is how we are resolving the fields with extra logic
-graphql_object!(MoreComplexUser:() |&self| {
-  field name() -> &str {
+#[Object]
+impl MoreComplexUser {
+  async fn name(&self) -> &str {
     self.name.as_str()
   }
-  field age() -> i32 {
+  async fn age(&self) -> i32 {
     self.age + 10
   }
-});
+ }
 
 
