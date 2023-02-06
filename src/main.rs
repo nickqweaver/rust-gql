@@ -1,7 +1,7 @@
 // Module Tree
-mod user;
 mod schema;
 mod server;
+mod user;
 
 use server::start;
 
