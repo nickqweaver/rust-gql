@@ -41,4 +41,6 @@ pub async fn start() {
             StatusCode::INTERNAL_SERVER_ERROR,
         ))
     });
+
+  warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
 }
