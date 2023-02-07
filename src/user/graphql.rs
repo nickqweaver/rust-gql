@@ -3,5 +3,5 @@ mod query;
 mod types;
 
 pub use mutation::UserMutation;
-pub use query::UserQuery;
-pub use types::{MoreComplexUser, Response, FakeUser};
+pub use query::{UserQuery, Token};
+pub use types::{FakeUser, MoreComplexUser, Response};
