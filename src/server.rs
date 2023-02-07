@@ -7,7 +7,7 @@ use http::StatusCode;
 use warp::{http::Response as HttpResponse, Filter, Rejection};
 
 pub async fn start() {
-    let schema = build_schema();
+    let schema = build_schema().await;
 
     println!("GraphiQL IDE: http://localhost:8000");
 

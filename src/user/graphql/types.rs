@@ -1,7 +1,7 @@
 use async_graphql::*;
 
 #[derive(SimpleObject)]
-pub struct User {
+pub struct FakeUser {
     // The users first name
     pub name: String,
     // The users age

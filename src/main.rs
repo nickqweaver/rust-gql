@@ -1,4 +1,5 @@
 // Module Tree
+mod entities;
 mod schema;
 mod server;
 mod user;
